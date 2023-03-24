@@ -1,0 +1,42 @@
+1.  asset_info 表
+添加字段
+ 
+ verify_state, verify_time, verify_user_id, verify_user_name, manager_id, manager_name
+
+2， 添加 asset_info_verfiy 表
+
+-- login_62.asset_info_verify definition
+
+CREATE TABLE `asset_info_verify` (
+  `id` int NOT NULL,
+  `number` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '编号',
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '设备名称（填入固定值：打印机或复印机）',
+  `model` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '设备型号',
+  `secret_level` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '非密' COMMENT '密级（填入固定值：非密）',
+  `SN` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '设备序列号',
+  `purpose` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '用途（填入固定值：打印或复印）',
+  `use_state` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '在用' COMMENT '使用情况（填入固定值：在用）',
+  `location` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '存放地点',
+  `org_id` int DEFAULT '0' COMMENT '部门id',
+  `org_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '所属部门',
+  `user_id` int DEFAULT '0' COMMENT '使用人id',
+  `user_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '使用人',
+  `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '设备类型',
+  `add_time` datetime DEFAULT NULL COMMENT '资产添加日期',
+  `ip` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT 'IP地址',
+  `mac` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT 'MAC地址',
+  `os` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '操作系统',
+  `disk_sn` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '硬盘序列号',
+  `install_date` datetime DEFAULT NULL COMMENT '系统安装日期',
+  `bootup_time` datetime DEFAULT NULL COMMENT '启用时间',
+  `terminal_id` int DEFAULT '0' COMMENT '终端ID',
+  `type_id` int DEFAULT '0',
+  `size` bigint DEFAULT NULL COMMENT '大小（磁盘等）',
+  `verify_state` int NOT NULL DEFAULT '0' COMMENT '校核状态 0-导入未校核 1 自动采集未校核  2 校核完成 3 导入冲突需要校核 4自动采集变化冲突需要重新校核',
+  `verify_time` timestamp NULL DEFAULT NULL COMMENT '校核时间',
+  `verify_user_id` int DEFAULT '0' COMMENT '校核用户id',
+  `manager_id` int DEFAULT '0',
+  `manager_name` varchar(255) DEFAULT NULL,
+  `verify_user_name` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`,`verify_state`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='有冲突等待校核数据';
