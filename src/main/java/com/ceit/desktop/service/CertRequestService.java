@@ -23,6 +23,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -169,10 +170,10 @@ public class CertRequestService {
                     // 获取上传文件的文件名
                     String fileName = fileItem.getName();
                     String size = String.valueOf(fileItem.getSize());
+                    String base64String = "";
                     // 使用上传文件创建输入流
                     InputStream fileStream = fileItem.getInputStream();
                     String file_size = String.valueOf(fileStream.available());
-
 
                     //计算软件hash值String md5Hash = hash.md5HashCode32(fileStream);
                     String md5Hash = hash.sha256HashCode32(fileStream);
@@ -207,6 +208,7 @@ public class CertRequestService {
                             // 一次写入1kb(1024byte)
                             out.write(buffer, 0, len);
                         }
+                        base64String = getIconToBase64String(file, path);
                         // 冲刷流资源
                         out.flush();
                         // 关闭流
@@ -218,13 +220,13 @@ public class CertRequestService {
                     }
 
                     // 文件上传需要写日志
-                    softwareUploadToDatabase(reqBody);
-                    String  sql = "insert into soft_cert (sw_name,sw_hash,sw_time) values (?,?,?)";
-                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    String upload_time = df.format(System.currentTimeMillis());
+                    //softwareUploadToDatabase(reqBody);
+                    String  sql = "insert into soft_cert (sw_name,sw_hash,sw_register,sw_image) values (?,?,?,?)";
+//                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//                    String upload_time = df.format(System.currentTimeMillis());
 
                     //文件上传需要写日志
-                    Integer res = simpleJDBC.update(sql,fileName,md5Hash,upload_time);
+                    Integer res = simpleJDBC.update(sql,fileName,md5Hash,"1", base64String);
                     if (res != 0) {
                         return new Result("success",200,fileName + "上传成功。");
                     }
@@ -302,34 +304,50 @@ public class CertRequestService {
 //
 //        return null;
 //    }
-    public static void getIcon2() throws FileNotFoundException {
-        File file = new File("D:\\Program Files\\TencentDocs\\TencentDocs.exe");
+    public static String getIconToBase64String(File file, String path) {
+    //File file = new File("D:\\Program Files\\TencentDocs\\TencentDocs.exe");
     // 图标保存地址OutputStream inStream = new FileOutputStream(new File("D:\\TencentDocs.exe_64(2).png"));
+        File f = new File(path);
+        String base64String = null;
         try {
         // 通过awt.shellFolder获取图标 默认为32 *32
-        ShellFolder shellFolder = ShellFolder.getShellFolder(file);
-        ImageIcon icon = new ImageIcon(shellFolder.getIcon(true));
-
-        int width = 32;
-        int height = 32;
-        BufferedImage bi = new BufferedImage(width,height,BufferedImage.TYPE_INT_ARGB);
-        Graphics g = bi.getGraphics();
-        g.drawImage(icon.getImage(),0,0,width,height,null);
-        g.dispose();
-        File f = new File("D:\\TencentDocs.exe_64(2).png");
-        try {
-            ImageIO.write(bi, "png", f);
-        } catch (IOException e) {
-            //log.error("写png文件失败",e);
-        }
+            ShellFolder shellFolder = ShellFolder.getShellFolder(file);
+            ImageIcon icon = new ImageIcon(shellFolder.getIcon(true));
+            int width = 32;
+            int height = 32;
+            BufferedImage bi = new BufferedImage(width,height,BufferedImage.TYPE_INT_ARGB);
+            Graphics g = bi.getGraphics();
+            g.drawImage(icon.getImage(),0,0,width,height,null);
+            g.dispose();
+            try {
+                ImageIO.write(bi, "png", f);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 //            BufferedImage imgIcon = (BufferedImage) icon.getImage();
 //            // 调整icon图标大小，放大后会模糊
 //            imgIcon = resize(imgIcon,256,256);
 //            ImageIO.write(imgIcon, "png", inStream);
 //            inStream.flush();
 //            inStream.close();
-    } catch (IOException e) {
-        e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        BufferedImage bufferedImage;
+        try {
+        //图片转base64
+            bufferedImage = ImageIO.read(f) ;
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ImageIO.write(bufferedImage,"png",outputStream);
+            byte[] bytes = outputStream.toByteArray();
+            base64String = Base64.getEncoder().encodeToString(bytes);
+            System.out.println(base64String);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        return base64String;
     }
 }
-}
+
