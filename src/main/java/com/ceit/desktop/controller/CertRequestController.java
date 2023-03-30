@@ -410,15 +410,14 @@ public class CertRequestController {
     }
 
     //软件上传注册
-    @RequestMapping(value = "/softUpload")
-    public Result softUploadToDatabase(Map<String, Object> reqBody) {
-        return certRequestService.softwareUploadToDatabase(reqBody);
+    @RequestMapping(value = "/privateSoftwareUpload")
+    public Result privateSoftwareUpload(Map<String, Object> reqBody) {
+        return certRequestService.privateSoftwareUpload(reqBody);
     }
 
-
-    @RequestMapping(value = "/softRegister")
+    @RequestMapping(value = "/publicSoftwareUpload")
     public Result softRegister(Map<String, Object> reqBody, HttpServletRequest request)  {
-        return certRequestService.softwareRegister(reqBody,request);
+        return certRequestService.publicSoftwareUpload(reqBody,request);
     }
 
     //软件下载

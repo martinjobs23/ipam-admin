@@ -20,6 +20,7 @@ import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.Date;
@@ -145,25 +146,32 @@ public class CertRequestService {
 
     }
 
-    public Result softwareUploadToDatabase(Map<String, Object> reqBody){    //上傳到數據庫
-//        String filename, desc, type, sw_public, org, version, time;
+    //私有软件上传
+    public Result privateSoftwareUpload(Map<String, Object> reqBody){
+        //String filename, desc, type, sw_public, org, version, time;
         String filename = (String) reqBody.get("sw_name");
         String desc = (String) reqBody.get("sw_desc");
         String type = (String) reqBody.get("sw_type");
         String sw_public = (String) reqBody.get("sw_public");
         String org_id = (String) reqBody.get("sw_organization");
         String version = (String) reqBody.get("sw_version");
-        String base64String = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAD4ElEQVR4Xu3XW0xbdRwHcDRGE01IfNEHfdVElxiTveiL2YNTN2ccC1sGGG8bojh2TdhAxkmZZHOsc0I3CmWlYEFWGHUttPQCdL1xaVdaSrm1UBDXaSbIbYBAfvr/f7MuS1OyvdEHT/J5OGnO//8953/7Nenf+9f6+jpthqT/AzwqwOrqKtyZmaa5xUW4rLtBfaEgdPp9UNaipvl7i/fdo7W1NYhtL1biB4hMT0PahWJyBYeh2WknlcMCnf19UNryKw1MhEHRbkQILra9WHEDLK+sULleC+2+PpCb9GTyumH09u+ksOggv64SBFUt1XYaQd1lo2DkNmh6uuAf9hVjO0+8ANFxW1pZpnNNDXBJ0wwmXzeNRiZA67HQ6UYpfFSSB2/kHqRXjnwBBcpqFsIB0eeXlpfizovECvD3wjyYvR4a/G0SdB4H3Br309RfEegO+ahIXQXpEgHeKvyWXsraD8+l76aTChmM34mAxd9PswsLsGGAwclJ+F5VRxqXAyo6miB8d4qGI2NgHXKTcF0K0QBvC4fo5W/S4Kl9H9Lzn6SC0mIGob6GApMTkLgB9O5eaLRb6YpJDUVqGQSmQmTyO6HaqqXjyouQIv4OtuZ/TS9m7oMnU3dSUsr7kFMhAT4P2m65IG4AvttVm9tA3WWnvHopZMvPg97rpFprCxQ0llNamQDbREfh1WOfUfKnKfDEnh309N5dIDPqQGlpZ20bIEEDsOXRzDrmGh1WOqoog4yyIlDc1NF5bR0ckJ6ld4TD8PqJL+GFg3vp2bSPYcvhr+iKTgP11g5odtromu0mrCVkAL5B+MNh8I6zmR7oh/0/ngGNy0lKmwkKG+T0rigXtotOQaZEzDrqBEW7gV7LyYTs8lLwjYeobywIcQPwG+9YCGQG3YMVUWXWg314gC5oVOAY8lPqDyLYXSzArjOFtFN0Gt4T8mnLkSyoYuPPiRp+pok//4C4cyAhAtydnYXjsnKq7TBBhvgcbBfyqNKoB294jK6y1cIVKOVwSCqhbQW5kJyxh7IkF8Hs84Cczf6Z+TnYMED0sLAF/HSWHURci6sH0llB8uaxbNh6IodqWNHBJbN9n0tK+YCeYcuOO/CTmLS9XVDMdlWOv9gjD6NNDxDFl6RjcABa3d3AiwpednG8PBPfaIIGNuu5zy+VUKlWDb+w++gxbPC4gW90D/eR2AEe1jMyBBWGVippVsE1u4U0vU64zgpUjq+Yy60auMrKt97REeAvw8W2+9gBouM2PTdHzqEAqOx8R7NAZVsr1HQYyR0cgRlW1MQb73gSP8BGoh1E/7jE/v64HgTYrGvTA/wHKxmKe2fuz0gAAAAASUVORK5CYII=";
+        String base64String = (String) reqBody.get("sw_image");
+        String hash = (String) reqBody.get("sw_hash");
+        if(base64String.equals(null))
+            base64String = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAD4ElEQVR4Xu3XW0xbdRwHcDRGE01IfNEHfdVElxiTveiL2YNTN2ccC1sGGG8bojh2TdhAxkmZZHOsc0I3CmWlYEFWGHUttPQCdL1xaVdaSrm1UBDXaSbIbYBAfvr/f7MuS1OyvdEHT/J5OGnO//8953/7Nenf+9f6+jpthqT/AzwqwOrqKtyZmaa5xUW4rLtBfaEgdPp9UNaipvl7i/fdo7W1NYhtL1biB4hMT0PahWJyBYeh2WknlcMCnf19UNryKw1MhEHRbkQILra9WHEDLK+sULleC+2+PpCb9GTyumH09u+ksOggv64SBFUt1XYaQd1lo2DkNmh6uuAf9hVjO0+8ANFxW1pZpnNNDXBJ0wwmXzeNRiZA67HQ6UYpfFSSB2/kHqRXjnwBBcpqFsIB0eeXlpfizovECvD3wjyYvR4a/G0SdB4H3Br309RfEegO+ahIXQXpEgHeKvyWXsraD8+l76aTChmM34mAxd9PswsLsGGAwclJ+F5VRxqXAyo6miB8d4qGI2NgHXKTcF0K0QBvC4fo5W/S4Kl9H9Lzn6SC0mIGob6GApMTkLgB9O5eaLRb6YpJDUVqGQSmQmTyO6HaqqXjyouQIv4OtuZ/TS9m7oMnU3dSUsr7kFMhAT4P2m65IG4AvttVm9tA3WWnvHopZMvPg97rpFprCxQ0llNamQDbREfh1WOfUfKnKfDEnh309N5dIDPqQGlpZ20bIEEDsOXRzDrmGh1WOqoog4yyIlDc1NF5bR0ckJ6ld4TD8PqJL+GFg3vp2bSPYcvhr+iKTgP11g5odtromu0mrCVkAL5B+MNh8I6zmR7oh/0/ngGNy0lKmwkKG+T0rigXtotOQaZEzDrqBEW7gV7LyYTs8lLwjYeobywIcQPwG+9YCGQG3YMVUWXWg314gC5oVOAY8lPqDyLYXSzArjOFtFN0Gt4T8mnLkSyoYuPPiRp+pok//4C4cyAhAtydnYXjsnKq7TBBhvgcbBfyqNKoB294jK6y1cIVKOVwSCqhbQW5kJyxh7IkF8Hs84Cczf6Z+TnYMED0sLAF/HSWHURci6sH0llB8uaxbNh6IodqWNHBJbN9n0tK+YCeYcuOO/CTmLS9XVDMdlWOv9gjD6NNDxDFl6RjcABa3d3AiwpednG8PBPfaIIGNuu5zy+VUKlWDb+w++gxbPC4gW90D/eR2AEe1jMyBBWGVippVsE1u4U0vU64zgpUjq+Yy60auMrKt97REeAvw8W2+9gBouM2PTdHzqEAqOx8R7NAZVsr1HQYyR0cgRlW1MQb73gSP8BGoh1E/7jE/v64HgTYrGvTA/wHKxmKe2fuz0gAAAAASUVORK5CYII=";
         Date date = new Date(); //获取当前时间并写入库
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String time = simpleDateFormat.format(date);
+        String selectSql = "select sw_name FROM soft_cert where sw_hash = ?";
+        Object obj = simpleJDBC.selectForOneNode(selectSql,hash);
+        if (!obj.equals(null))
+            return new Result("error",100,"软件已经存在，请上传其它版本软件。");
         String sql = "insert into soft_cert (sw_name,sw_desc,sw_type,sw_public,sw_organization,sw_version,sw_time,sw_size,sw_url,sw_hash,sw_register,sw_image) values (?,?,?,?,?,?,?,?,?,?,?,?)";
-        int res = simpleJDBC.update(sql,filename,desc,type,sw_public,org_id,version,time,"0Mb","#####","0","0",base64String);
-        if(res == 0){
-            return new Result("error", 300, "写入数据库失败。");
-        }
+        int res = simpleJDBC.update(sql,filename,desc,type,sw_public,org_id,version,time,"0Mb","#####",hash,"0",base64String);
+        if(res == 0)
+            return new Result("error", 300, "私有软件" + filename + "上传数据库失败。");
         else
-            return new Result("success", 200, "写入数据库成功。");
+            return new Result("success", 200, "私有软件" + filename + "上传数据库成功。");
 //        for (int i = 0; i < list.size(); i++) {
 //            UploadList uploadList = list.get(i);
 //            //hash = uploadList.getHash();  个人以为hash是需要点击上传后才会需要生成的
@@ -177,15 +185,14 @@ public class CertRequestService {
 //            //register = uploadList.getRegister();  同hash
     }
 
-    //软件認證
-    public Result softwareRegister(Map<String, Object> reqBody, HttpServletRequest request) {
+    //公有软件上传并认证
+    public Result publicSoftwareUpload(Map<String, Object> reqBody, HttpServletRequest request) {
         // 使用FileItem工场类创建相应工场对象
         FileItemFactory factory = new DiskFileItemFactory();
         // 创建servlet文件上传对象并将指定工场对象传入
         ServletFileUpload fileUpload = new ServletFileUpload(factory);
         //中文文件名处理的代码
         fileUpload.setHeaderEncoding("utf-8");
-
         // 声明文件集合
         List<FileItem> parseRequest = null;
         //设置文件上传保存文件路径：保存在项目运行目录下的uploadFile文件夹
@@ -199,12 +206,13 @@ public class CertRequestService {
                 if (!fileItem.isFormField()) {
                     // 获取上传文件的文件名
                     String fileName = fileItem.getName();
-                    String size = String.valueOf(fileItem.getSize());
+                    Long filesize = fileItem.getSize();
+                    String size = sizeRecalculation(filesize);  //字节转换为KB,MB和GB
                     String base64String;
                     // 使用上传文件创建输入流
                     InputStream fileStream = fileItem.getInputStream();
                     String file_size = String.valueOf(fileStream.available());
-                    //计算软件hash值String sha256Hash = hash.md5HashCode32(fileStream);
+                    //计算软件hash值
                     String sha256Hash = hash.sha256HashCode32(fileStream);
                     //System.out.println("sha256Hash: " + sha256Hash);
 
@@ -243,22 +251,31 @@ public class CertRequestService {
                         fileStream.close();
                     } else {
                         fileStream.close();
-                        return new Result("error",200,"软件已经存在，请上传其它版本软件");
+                        return new Result("error",100,"软件已经存在，请上传其它版本软件");
                     }
 
                     // 文件上传需要写日志
-                    softwareUploadToDatabase(reqBody);
-                    String  sql = "UPDATE soft_cert SET sw_hash = ?, sw_size = ?, sw_url = ?, sw_register = ?, sw_image = ? WHERE sw_name = ? ";
-                    Integer res = simpleJDBC.update(sql,sha256Hash, size, path, "0", base64String, fileName);
-                    if (res != 0) {
-                        return new Result("success",200,fileName + "上传成功。");
-                    }
+                    //softwareUploadToDatabase(reqBody);
+                    String desc = (String) reqBody.get("sw_desc");
+                    String type = (String) reqBody.get("sw_type");
+                    String sw_public = (String) reqBody.get("sw_public");
+                    String org_id = (String) reqBody.get("sw_organization");
+                    String version = (String) reqBody.get("sw_version");
+                    Date date = new Date(); //获取当前时间并写入库
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    String time = simpleDateFormat.format(date);
+                    String sql = "insert into soft_cert (sw_name,sw_desc,sw_type,sw_public,sw_organization,sw_version,sw_time,sw_size,sw_url,sw_hash,sw_register,sw_image) values (?,?,?,?,?,?,?,?,?,?,?,?)";
+                    int res = simpleJDBC.update(sql,fileName,desc,type,sw_public,org_id,version,time,size,path,sha256Hash,"1",base64String);
+                    if(res == 0)
+                        return new Result("error", 300, "公有软件" + fileName + "上传数据库失败。");
+                    else
+                        return new Result("success", 200, "公有软件" + fileName + "上传数据库成功。");
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new Result("上传失败",200,"error");
+        return new Result("文件上传失败",200,"error");
     }
 
     public static String getIconToBase64String(File file) {
@@ -287,7 +304,7 @@ public class CertRequestService {
         }
         if (base64String.equals("iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAD4ElEQVR4Xu3XW0xbdRwHcDRGE01IfNEHfdVElxiTveiL2YNTN2ccC1sGGG8bojh2TdhAxkmZZHOsc0I3CmWlYEFWGHUttPQCdL1xaVdaSrm1UBDXaSbIbYBAfvr/f7MuS1OyvdEHT/J5OGnO//8953/7Nenf+9f6+jpthqT/AzwqwOrqKtyZmaa5xUW4rLtBfaEgdPp9UNaipvl7i/fdo7W1NYhtL1biB4hMT0PahWJyBYeh2WknlcMCnf19UNryKw1MhEHRbkQILra9WHEDLK+sULleC+2+PpCb9GTyumH09u+ksOggv64SBFUt1XYaQd1lo2DkNmh6uuAf9hVjO0+8ANFxW1pZpnNNDXBJ0wwmXzeNRiZA67HQ6UYpfFSSB2/kHqRXjnwBBcpqFsIB0eeXlpfizovECvD3wjyYvR4a/G0SdB4H3Br309RfEegO+ahIXQXpEgHeKvyWXsraD8+l76aTChmM34mAxd9PswsLsGGAwclJ+F5VRxqXAyo6miB8d4qGI2NgHXKTcF0K0QBvC4fo5W/S4Kl9H9Lzn6SC0mIGob6GApMTkLgB9O5eaLRb6YpJDUVqGQSmQmTyO6HaqqXjyouQIv4OtuZ/TS9m7oMnU3dSUsr7kFMhAT4P2m65IG4AvttVm9tA3WWnvHopZMvPg97rpFprCxQ0llNamQDbREfh1WOfUfKnKfDEnh309N5dIDPqQGlpZ20bIEEDsOXRzDrmGh1WOqoog4yyIlDc1NF5bR0ckJ6ld4TD8PqJL+GFg3vp2bSPYcvhr+iKTgP11g5odtromu0mrCVkAL5B+MNh8I6zmR7oh/0/ngGNy0lKmwkKG+T0rigXtotOQaZEzDrqBEW7gV7LyYTs8lLwjYeobywIcQPwG+9YCGQG3YMVUWXWg314gC5oVOAY8lPqDyLYXSzArjOFtFN0Gt4T8mnLkSyoYuPPiRp+pok//4C4cyAhAtydnYXjsnKq7TBBhvgcbBfyqNKoB294jK6y1cIVKOVwSCqhbQW5kJyxh7IkF8Hs84Cczf6Z+TnYMED0sLAF/HSWHURci6sH0llB8uaxbNh6IodqWNHBJbN9n0tK+YCeYcuOO/CTmLS9XVDMdlWOv9gjD6NNDxDFl6RjcABa3d3AiwpednG8PBPfaIIGNuu5zy+VUKlWDb+w++gxbPC4gW90D/eR2AEe1jMyBBWGVippVsE1u4U0vU64zgpUjq+Yy60auMrKt97REeAvw8W2+9gBouM2PTdHzqEAqOx8R7NAZVsr1HQYyR0cgRlW1MQb73gSP8BGoh1E/7jE/v64HgTYrGvTA/wHKxmKe2fuz0gAAAAASUVORK5CYII="))
         {
-            System.out.println("base64String生成失敗。");
+            System.out.println("base64String生成失敗，使用初始图标。");
         }
         //        BufferedImage bufferedImage;
 //        try {
@@ -305,5 +322,26 @@ public class CertRequestService {
 //        }
         return base64String;
     }
+    public String sizeRecalculation(Long size) {
+        int GB = 1024 * 1024 * 1024;    //GB
+        int MB = 1024 * 1024;   //MB
+        int KB = 1024;  //KB
+        DecimalFormat df = new DecimalFormat("0.00");//格式化小数
+        String resultSize = "";
+        if (size / GB >= 1) {
+            //如果当前Byte的值大于等于1GB
+            resultSize = df.format(size / (float) GB) + "GB";
+        } else if (size / MB >= 1) {
+            //如果当前Byte的值大于等于1MB
+            resultSize = df.format(size / (float) MB) + "MB";
+        } else if (size / KB >= 1) {
+            //如果当前Byte的值大于等于1KB
+            resultSize = df.format(size / (float) KB) + "KB";
+        } else {
+            resultSize = size + "B";
+        }
+        return resultSize;
+    }
+
 }
 
