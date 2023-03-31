@@ -167,7 +167,7 @@ public class CertRequestService {
         if (!obj.equals(null))
             return new Result("error",100,"软件已经存在，请上传其它版本软件。");
         String sql = "insert into soft_cert (sw_name,sw_desc,sw_type,sw_public,sw_organization,sw_version,sw_time,sw_size,sw_url,sw_hash,sw_register,sw_image) values (?,?,?,?,?,?,?,?,?,?,?,?)";
-        int res = simpleJDBC.update(sql,filename,desc,type,sw_public,org_id,version,time,"0Mb","#####",hash,"0",base64String);
+        int res = simpleJDBC.update(sql,filename,desc,type,sw_public,org_id,version,time,"0MB","#####",hash,"0",base64String);
         if(res == 0)
             return new Result("error", 300, "私有软件" + filename + "上传数据库失败。");
         else
@@ -206,7 +206,7 @@ public class CertRequestService {
                 if (!fileItem.isFormField()) {
                     // 获取上传文件的文件名
                     String fileName = fileItem.getName();
-                    Long filesize = fileItem.getSize();
+                    long filesize = fileItem.getSize();
                     String size = sizeRecalculation(filesize);  //字节转换为KB,MB和GB
                     String base64String;
                     // 使用上传文件创建输入流
@@ -244,6 +244,7 @@ public class CertRequestService {
                             out.write(buffer, 0, len);
                         }
                         base64String = getIconToBase64String(file);
+                        System.out.println(base64String);
                         // 冲刷流资源
                         out.flush();
                         // 关闭流
@@ -275,14 +276,14 @@ public class CertRequestService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new Result("文件上传失败",200,"error");
+        return new Result("error",100,"文件上传失败");
     }
 
     public static String getIconToBase64String(File file) {
         String base64String = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAD4ElEQVR4Xu3XW0xbdRwHcDRGE01IfNEHfdVElxiTveiL2YNTN2ccC1sGGG8bojh2TdhAxkmZZHOsc0I3CmWlYEFWGHUttPQCdL1xaVdaSrm1UBDXaSbIbYBAfvr/f7MuS1OyvdEHT/J5OGnO//8953/7Nenf+9f6+jpthqT/AzwqwOrqKtyZmaa5xUW4rLtBfaEgdPp9UNaipvl7i/fdo7W1NYhtL1biB4hMT0PahWJyBYeh2WknlcMCnf19UNryKw1MhEHRbkQILra9WHEDLK+sULleC+2+PpCb9GTyumH09u+ksOggv64SBFUt1XYaQd1lo2DkNmh6uuAf9hVjO0+8ANFxW1pZpnNNDXBJ0wwmXzeNRiZA67HQ6UYpfFSSB2/kHqRXjnwBBcpqFsIB0eeXlpfizovECvD3wjyYvR4a/G0SdB4H3Br309RfEegO+ahIXQXpEgHeKvyWXsraD8+l76aTChmM34mAxd9PswsLsGGAwclJ+F5VRxqXAyo6miB8d4qGI2NgHXKTcF0K0QBvC4fo5W/S4Kl9H9Lzn6SC0mIGob6GApMTkLgB9O5eaLRb6YpJDUVqGQSmQmTyO6HaqqXjyouQIv4OtuZ/TS9m7oMnU3dSUsr7kFMhAT4P2m65IG4AvttVm9tA3WWnvHopZMvPg97rpFprCxQ0llNamQDbREfh1WOfUfKnKfDEnh309N5dIDPqQGlpZ20bIEEDsOXRzDrmGh1WOqoog4yyIlDc1NF5bR0ckJ6ld4TD8PqJL+GFg3vp2bSPYcvhr+iKTgP11g5odtromu0mrCVkAL5B+MNh8I6zmR7oh/0/ngGNy0lKmwkKG+T0rigXtotOQaZEzDrqBEW7gV7LyYTs8lLwjYeobywIcQPwG+9YCGQG3YMVUWXWg314gC5oVOAY8lPqDyLYXSzArjOFtFN0Gt4T8mnLkSyoYuPPiRp+pok//4C4cyAhAtydnYXjsnKq7TBBhvgcbBfyqNKoB294jK6y1cIVKOVwSCqhbQW5kJyxh7IkF8Hs84Cczf6Z+TnYMED0sLAF/HSWHURci6sH0llB8uaxbNh6IodqWNHBJbN9n0tK+YCeYcuOO/CTmLS9XVDMdlWOv9gjD6NNDxDFl6RjcABa3d3AiwpednG8PBPfaIIGNuu5zy+VUKlWDb+w++gxbPC4gW90D/eR2AEe1jMyBBWGVippVsE1u4U0vU64zgpUjq+Yy60auMrKt97REeAvw8W2+9gBouM2PTdHzqEAqOx8R7NAZVsr1HQYyR0cgRlW1MQb73gSP8BGoh1E/7jE/v64HgTYrGvTA/wHKxmKe2fuz0gAAAAASUVORK5CYII=";
         // 通过awt.shellFolder获取图标 默认为32 *32(这个办法在使用过程中会报错java: 程序包sun.awt.shell不存在，只能通过另一种方法获取小图标，再把小图标变成32*32的大图标
-//            sun.awt.shell.ShellFolder shellFolder = sun.awt.shell.ShellFolder.getShellFolder(file);
-//            ImageIcon icon = new ImageIcon(shellFolder.getIcon(true));
+        //sun.awt.shell.ShellFolder shellFolder = sun.awt.shell.ShellFolder.getShellFolder(file);
+        //ImageIcon icon = new ImageIcon(shellFolder.getIcon(true));
         Image icon = ((ImageIcon) FileSystemView.getFileSystemView().getSystemIcon(file)).getImage();
         //获取小图标后转化为大图标
         int width = 32;
@@ -322,20 +323,20 @@ public class CertRequestService {
 //        }
         return base64String;
     }
-    public String sizeRecalculation(Long size) {
+    public String sizeRecalculation(long size) {
         int GB = 1024 * 1024 * 1024;    //GB
         int MB = 1024 * 1024;   //MB
         int KB = 1024;  //KB
-        DecimalFormat df = new DecimalFormat("0.00");//格式化小数
+        long TB = 1024L * 1024L * 1024L * 1024L;    //TB
+        DecimalFormat df = new DecimalFormat("0.00");   //格式化小数
         String resultSize = "";
-        if (size / GB >= 1) {
-            //如果当前Byte的值大于等于1GB
+        if (size / TB >= 1) {
+            resultSize = df.format(size / (float) TB) + "TB";
+        } else if (size / GB >= 1) {
             resultSize = df.format(size / (float) GB) + "GB";
         } else if (size / MB >= 1) {
-            //如果当前Byte的值大于等于1MB
             resultSize = df.format(size / (float) MB) + "MB";
         } else if (size / KB >= 1) {
-            //如果当前Byte的值大于等于1KB
             resultSize = df.format(size / (float) KB) + "KB";
         } else {
             resultSize = size + "B";
