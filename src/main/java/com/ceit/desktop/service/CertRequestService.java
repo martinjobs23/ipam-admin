@@ -1,5 +1,6 @@
 package com.ceit.desktop.service;
 
+import com.ceit.admin.common.utils.FileUtil;
 import com.ceit.desktop.grpc.client.WebToControlClient;
 import com.ceit.desktop.grpc.controlCenter.*;
 import com.ceit.desktop.util.Hash;
@@ -11,6 +12,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload.servlet.ServletRequestContext;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +22,7 @@ import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Base64;
@@ -138,7 +141,7 @@ public class CertRequestService {
         System.out.println("filename:" +soft_name);
         File file = new File(fileFatherPath,soft_name);
         if (file.exists()){
-            com.ceit.admin.common.utils.FileUtil.download(fileFatherPath, soft_name, response);
+            FileUtil.download(fileFatherPath, soft_name, response);
             return new Result("下载成功",200,"success");
         } else {
             return new Result("软件不存在",200,"error");
@@ -152,41 +155,32 @@ public class CertRequestService {
         String filename = (String) reqBody.get("sw_name");
         String desc = (String) reqBody.get("sw_desc");
         String type = (String) reqBody.get("sw_type");
-        String sw_public = (String) reqBody.get("sw_public");
-        String org_id = (String) reqBody.get("sw_organization");
+        String org_id =  String.valueOf(reqBody.get("sw_organization"));
         String version = (String) reqBody.get("sw_version");
-        String base64String = (String) reqBody.get("sw_image");
         String hash = (String) reqBody.get("sw_hash");
-        if(base64String.equals(null))
-            base64String = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAD4ElEQVR4Xu3XW0xbdRwHcDRGE01IfNEHfdVElxiTveiL2YNTN2ccC1sGGG8bojh2TdhAxkmZZHOsc0I3CmWlYEFWGHUttPQCdL1xaVdaSrm1UBDXaSbIbYBAfvr/f7MuS1OyvdEHT/J5OGnO//8953/7Nenf+9f6+jpthqT/AzwqwOrqKtyZmaa5xUW4rLtBfaEgdPp9UNaipvl7i/fdo7W1NYhtL1biB4hMT0PahWJyBYeh2WknlcMCnf19UNryKw1MhEHRbkQILra9WHEDLK+sULleC+2+PpCb9GTyumH09u+ksOggv64SBFUt1XYaQd1lo2DkNmh6uuAf9hVjO0+8ANFxW1pZpnNNDXBJ0wwmXzeNRiZA67HQ6UYpfFSSB2/kHqRXjnwBBcpqFsIB0eeXlpfizovECvD3wjyYvR4a/G0SdB4H3Br309RfEegO+ahIXQXpEgHeKvyWXsraD8+l76aTChmM34mAxd9PswsLsGGAwclJ+F5VRxqXAyo6miB8d4qGI2NgHXKTcF0K0QBvC4fo5W/S4Kl9H9Lzn6SC0mIGob6GApMTkLgB9O5eaLRb6YpJDUVqGQSmQmTyO6HaqqXjyouQIv4OtuZ/TS9m7oMnU3dSUsr7kFMhAT4P2m65IG4AvttVm9tA3WWnvHopZMvPg97rpFprCxQ0llNamQDbREfh1WOfUfKnKfDEnh309N5dIDPqQGlpZ20bIEEDsOXRzDrmGh1WOqoog4yyIlDc1NF5bR0ckJ6ld4TD8PqJL+GFg3vp2bSPYcvhr+iKTgP11g5odtromu0mrCVkAL5B+MNh8I6zmR7oh/0/ngGNy0lKmwkKG+T0rigXtotOQaZEzDrqBEW7gV7LyYTs8lLwjYeobywIcQPwG+9YCGQG3YMVUWXWg314gC5oVOAY8lPqDyLYXSzArjOFtFN0Gt4T8mnLkSyoYuPPiRp+pok//4C4cyAhAtydnYXjsnKq7TBBhvgcbBfyqNKoB294jK6y1cIVKOVwSCqhbQW5kJyxh7IkF8Hs84Cczf6Z+TnYMED0sLAF/HSWHURci6sH0llB8uaxbNh6IodqWNHBJbN9n0tK+YCeYcuOO/CTmLS9XVDMdlWOv9gjD6NNDxDFl6RjcABa3d3AiwpednG8PBPfaIIGNuu5zy+VUKlWDb+w++gxbPC4gW90D/eR2AEe1jMyBBWGVippVsE1u4U0vU64zgpUjq+Yy60auMrKt97REeAvw8W2+9gBouM2PTdHzqEAqOx8R7NAZVsr1HQYyR0cgRlW1MQb73gSP8BGoh1E/7jE/v64HgTYrGvTA/wHKxmKe2fuz0gAAAAASUVORK5CYII=";
+        String base64String = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAD4ElEQVR4Xu3XW0xbdRwHcDRGE01IfNEHfdVElxiTveiL2YNTN2ccC1sGGG8bojh2TdhAxkmZZHOsc0I3CmWlYEFWGHUttPQCdL1xaVdaSrm1UBDXaSbIbYBAfvr/f7MuS1OyvdEHT/J5OGnO//8953/7Nenf+9f6+jpthqT/AzwqwOrqKtyZmaa5xUW4rLtBfaEgdPp9UNaipvl7i/fdo7W1NYhtL1biB4hMT0PahWJyBYeh2WknlcMCnf19UNryKw1MhEHRbkQILra9WHEDLK+sULleC+2+PpCb9GTyumH09u+ksOggv64SBFUt1XYaQd1lo2DkNmh6uuAf9hVjO0+8ANFxW1pZpnNNDXBJ0wwmXzeNRiZA67HQ6UYpfFSSB2/kHqRXjnwBBcpqFsIB0eeXlpfizovECvD3wjyYvR4a/G0SdB4H3Br309RfEegO+ahIXQXpEgHeKvyWXsraD8+l76aTChmM34mAxd9PswsLsGGAwclJ+F5VRxqXAyo6miB8d4qGI2NgHXKTcF0K0QBvC4fo5W/S4Kl9H9Lzn6SC0mIGob6GApMTkLgB9O5eaLRb6YpJDUVqGQSmQmTyO6HaqqXjyouQIv4OtuZ/TS9m7oMnU3dSUsr7kFMhAT4P2m65IG4AvttVm9tA3WWnvHopZMvPg97rpFprCxQ0llNamQDbREfh1WOfUfKnKfDEnh309N5dIDPqQGlpZ20bIEEDsOXRzDrmGh1WOqoog4yyIlDc1NF5bR0ckJ6ld4TD8PqJL+GFg3vp2bSPYcvhr+iKTgP11g5odtromu0mrCVkAL5B+MNh8I6zmR7oh/0/ngGNy0lKmwkKG+T0rigXtotOQaZEzDrqBEW7gV7LyYTs8lLwjYeobywIcQPwG+9YCGQG3YMVUWXWg314gC5oVOAY8lPqDyLYXSzArjOFtFN0Gt4T8mnLkSyoYuPPiRp+pok//4C4cyAhAtydnYXjsnKq7TBBhvgcbBfyqNKoB294jK6y1cIVKOVwSCqhbQW5kJyxh7IkF8Hs84Cczf6Z+TnYMED0sLAF/HSWHURci6sH0llB8uaxbNh6IodqWNHBJbN9n0tK+YCeYcuOO/CTmLS9XVDMdlWOv9gjD6NNDxDFl6RjcABa3d3AiwpednG8PBPfaIIGNuu5zy+VUKlWDb+w++gxbPC4gW90D/eR2AEe1jMyBBWGVippVsE1u4U0vU64zgpUjq+Yy60auMrKt97REeAvw8W2+9gBouM2PTdHzqEAqOx8R7NAZVsr1HQYyR0cgRlW1MQb73gSP8BGoh1E/7jE/v64HgTYrGvTA/wHKxmKe2fuz0gAAAAASUVORK5CYII=";
         Date date = new Date(); //获取当前时间并写入库
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String time = simpleDateFormat.format(date);
         String selectSql = "select sw_name FROM soft_cert where sw_hash = ?";
         Object obj = simpleJDBC.selectForOneNode(selectSql,hash);
-        if (!obj.equals(null))
-            return new Result("error",100,"软件已经存在，请上传其它版本软件。");
+        if (obj != null) {
+            return new Result("error", 100, "软件已经存在，请上传其它版本软件。");
+        }
         String sql = "insert into soft_cert (sw_name,sw_desc,sw_type,sw_public,sw_organization,sw_version,sw_time,sw_size,sw_url,sw_hash,sw_register,sw_image) values (?,?,?,?,?,?,?,?,?,?,?,?)";
-        int res = simpleJDBC.update(sql,filename,desc,type,sw_public,org_id,version,time,"0MB","#####",hash,"0",base64String);
-        if(res == 0)
+        int res = simpleJDBC.update(sql,filename,desc,type,"0",org_id,version,time,"0MB","#####",hash,"0",base64String);
+        if(res == 0) {
             return new Result("error", 300, "私有软件" + filename + "上传数据库失败。");
-        else
+        }
+        else {
             return new Result("success", 200, "私有软件" + filename + "上传数据库成功。");
-//        for (int i = 0; i < list.size(); i++) {
-//            UploadList uploadList = list.get(i);
-//            //hash = uploadList.getHash();  个人以为hash是需要点击上传后才会需要生成的
-//            filename = uploadList.getFilename();
-//            desc = uploadList.getDesc();
-//            size = uploadList.getSize();
-//            //url = uploadList.getUrl();    同hash
-//            type = uploadList.getType();
-//            org = uploadList.getOrg();
-//            version = uploadList.getVersion();
-//            //register = uploadList.getRegister();  同hash
+        }
     }
 
     //公有软件上传并认证
     public Result publicSoftwareUpload(Map<String, Object> reqBody, HttpServletRequest request) {
+        ServletRequestContext servletRequestContext = new ServletRequestContext(request);
+        System.out.println(servletRequestContext);
         // 使用FileItem工场类创建相应工场对象
         FileItemFactory factory = new DiskFileItemFactory();
         // 创建servlet文件上传对象并将指定工场对象传入
@@ -195,8 +189,10 @@ public class CertRequestService {
         fileUpload.setHeaderEncoding("utf-8");
         // 声明文件集合
         List<FileItem> parseRequest = null;
-        //设置文件上传保存文件路径：保存在项目运行目录下的uploadFile文件夹
-        String path = System.getProperty("softupload.path");
+
+        //设置文件上传保存文件路径：保存在项目运行目录下的upload/supermarket文件夹
+        String path = FileUtil.GetUploadPath(request);
+        path = Paths.get(path, "supermarket").toString();
         try {
             // 使用servlet文件上传对象解析请求返回文件集合
             parseRequest = fileUpload.parseRequest(request);
@@ -211,16 +207,18 @@ public class CertRequestService {
                     String base64String;
                     // 使用上传文件创建输入流
                     InputStream fileStream = fileItem.getInputStream();
-                    String file_size = String.valueOf(fileStream.available());
+                    InputStream hashfile = fileItem.getInputStream();
+                    //String file_size = String.valueOf(fileStream.available());
                     //计算软件hash值
-                    String sha256Hash = hash.sha256HashCode32(fileStream);
+                    String sha256Hash = hash.sha256HashCode32(hashfile);
                     //System.out.println("sha256Hash: " + sha256Hash);
 
                     String selectSql = "select sw_name FROM soft_cert where sw_hash = ?";
-                    Object o = simpleJDBC.selectForOneNode(selectSql,sha256Hash);
-                    //判断软件是否已在软件仓库,o为空时，软件不存在，
-                    if (o == null) {
+                    Object obj = simpleJDBC.selectForOneNode(selectSql,sha256Hash);
+                    //判断软件是否已在软件仓库,o为空时，软件不存在
+                    if (obj == null) {
                         WebToControlClient webToControlClient = new WebToControlClient();
+
                         UploadRespond uploadRespond = webToControlClient.blockingStub.softwareRegister(UploadRequest.newBuilder().setHash(sha256Hash).build());
                         System.out.println("code: " + uploadRespond.getCode());
                         System.out.println("data: " + uploadRespond.getData());
@@ -243,13 +241,15 @@ public class CertRequestService {
                             // 一次写入1kb(1024byte)
                             out.write(buffer, 0, len);
                         }
-                        base64String = getIconToBase64String(file);
-                        System.out.println(base64String);
+
                         // 冲刷流资源
                         out.flush();
                         // 关闭流
                         out.close();
                         fileStream.close();
+
+                        base64String = IconToBase64String(file);
+                        System.out.println(base64String);
                     } else {
                         fileStream.close();
                         return new Result("error",100,"软件已经存在，请上传其它版本软件");
@@ -257,16 +257,20 @@ public class CertRequestService {
 
                     // 文件上传需要写日志
                     //softwareUploadToDatabase(reqBody);
+                    String name = request.getParameter("sw_name");
                     String desc = (String) reqBody.get("sw_desc");
                     String type = (String) reqBody.get("sw_type");
                     String sw_public = (String) reqBody.get("sw_public");
-                    String org_id = (String) reqBody.get("sw_organization");
+                    String org_id =  String.valueOf(reqBody.get("sw_organization"));
                     String version = (String) reqBody.get("sw_version");
                     Date date = new Date(); //获取当前时间并写入库
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     String time = simpleDateFormat.format(date);
+                    StringBuilder url = new StringBuilder();
+                    url.append(path).append("\\").append(fileName);
                     String sql = "insert into soft_cert (sw_name,sw_desc,sw_type,sw_public,sw_organization,sw_version,sw_time,sw_size,sw_url,sw_hash,sw_register,sw_image) values (?,?,?,?,?,?,?,?,?,?,?,?)";
-                    int res = simpleJDBC.update(sql,fileName,desc,type,sw_public,org_id,version,time,size,path,sha256Hash,"1",base64String);
+                    System.out.println("Filename:"+name+"\nDesc:"+desc+"\nType:"+type+"\nOrg_id:"+org_id+"\nVersion:"+version);
+                    int res = simpleJDBC.update(sql,name,desc,type,"1",org_id,version,time,size,url.toString(),sha256Hash,"1",base64String);
                     if(res == 0)
                         return new Result("error", 300, "公有软件" + fileName + "上传数据库失败。");
                     else
@@ -276,14 +280,35 @@ public class CertRequestService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new Result("error",100,"文件上传失败");
+        return new Result("success", 100, "传输请求错误，上传失败。");
     }
 
-    public static String getIconToBase64String(File file) {
+    public Result SoftwareEdit(Map<String, Object> reqBody){
+        //String filename, desc, type, sw_public, org, version, time;
+        String hash = (String) reqBody.get("sw_hash");
+        String selectSql = "select sw_name FROM soft_cert where sw_hash = ?";
+        Object obj = simpleJDBC.selectForOneNode(selectSql,hash);
+        if (obj == null)
+            return new Result("error", 000, "未找到此软件，hash值错误。");
+        String filename = (String) reqBody.get("sw_name");
+        String desc = (String) reqBody.get("sw_desc");
+        String type = (String) reqBody.get("sw_type");
+        String org_id =  String.valueOf(reqBody.get("sw_organization"));
+        String version = (String) reqBody.get("sw_version");
+
+        String sql = "UPDATE soft_cert SET sw_name=?,sw_desc=?,sw_type=?,sw_organization=?,sw_version=? WHERE sw_hash=?";
+        int res = simpleJDBC.update(sql,filename,desc,type,org_id,version,hash);
+        if(res == 0)
+            return new Result("error", 300, "软件" + filename + "内容编辑失败。");
+        else
+            return new Result("success", 200, "软件" + filename + "内容编辑成功。");
+    }
+
+    public static String IconToBase64String(File file) {
         String base64String = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAD4ElEQVR4Xu3XW0xbdRwHcDRGE01IfNEHfdVElxiTveiL2YNTN2ccC1sGGG8bojh2TdhAxkmZZHOsc0I3CmWlYEFWGHUttPQCdL1xaVdaSrm1UBDXaSbIbYBAfvr/f7MuS1OyvdEHT/J5OGnO//8953/7Nenf+9f6+jpthqT/AzwqwOrqKtyZmaa5xUW4rLtBfaEgdPp9UNaipvl7i/fdo7W1NYhtL1biB4hMT0PahWJyBYeh2WknlcMCnf19UNryKw1MhEHRbkQILra9WHEDLK+sULleC+2+PpCb9GTyumH09u+ksOggv64SBFUt1XYaQd1lo2DkNmh6uuAf9hVjO0+8ANFxW1pZpnNNDXBJ0wwmXzeNRiZA67HQ6UYpfFSSB2/kHqRXjnwBBcpqFsIB0eeXlpfizovECvD3wjyYvR4a/G0SdB4H3Br309RfEegO+ahIXQXpEgHeKvyWXsraD8+l76aTChmM34mAxd9PswsLsGGAwclJ+F5VRxqXAyo6miB8d4qGI2NgHXKTcF0K0QBvC4fo5W/S4Kl9H9Lzn6SC0mIGob6GApMTkLgB9O5eaLRb6YpJDUVqGQSmQmTyO6HaqqXjyouQIv4OtuZ/TS9m7oMnU3dSUsr7kFMhAT4P2m65IG4AvttVm9tA3WWnvHopZMvPg97rpFprCxQ0llNamQDbREfh1WOfUfKnKfDEnh309N5dIDPqQGlpZ20bIEEDsOXRzDrmGh1WOqoog4yyIlDc1NF5bR0ckJ6ld4TD8PqJL+GFg3vp2bSPYcvhr+iKTgP11g5odtromu0mrCVkAL5B+MNh8I6zmR7oh/0/ngGNy0lKmwkKG+T0rigXtotOQaZEzDrqBEW7gV7LyYTs8lLwjYeobywIcQPwG+9YCGQG3YMVUWXWg314gC5oVOAY8lPqDyLYXSzArjOFtFN0Gt4T8mnLkSyoYuPPiRp+pok//4C4cyAhAtydnYXjsnKq7TBBhvgcbBfyqNKoB294jK6y1cIVKOVwSCqhbQW5kJyxh7IkF8Hs84Cczf6Z+TnYMED0sLAF/HSWHURci6sH0llB8uaxbNh6IodqWNHBJbN9n0tK+YCeYcuOO/CTmLS9XVDMdlWOv9gjD6NNDxDFl6RjcABa3d3AiwpednG8PBPfaIIGNuu5zy+VUKlWDb+w++gxbPC4gW90D/eR2AEe1jMyBBWGVippVsE1u4U0vU64zgpUjq+Yy60auMrKt97REeAvw8W2+9gBouM2PTdHzqEAqOx8R7NAZVsr1HQYyR0cgRlW1MQb73gSP8BGoh1E/7jE/v64HgTYrGvTA/wHKxmKe2fuz0gAAAAASUVORK5CYII=";
         // 通过awt.shellFolder获取图标 默认为32 *32(这个办法在使用过程中会报错java: 程序包sun.awt.shell不存在，只能通过另一种方法获取小图标，再把小图标变成32*32的大图标
-        //sun.awt.shell.ShellFolder shellFolder = sun.awt.shell.ShellFolder.getShellFolder(file);
-        //ImageIcon icon = new ImageIcon(shellFolder.getIcon(true));
+//            sun.awt.shell.ShellFolder shellFolder = sun.awt.shell.ShellFolder.getShellFolder(file);
+//            ImageIcon icon = new ImageIcon(shellFolder.getIcon(true));
         Image icon = ((ImageIcon) FileSystemView.getFileSystemView().getSystemIcon(file)).getImage();
         //获取小图标后转化为大图标
         int width = 32;
@@ -299,7 +324,6 @@ public class CertRequestService {
             ImageIO.write(bi,"png",outputStream);
             byte[] bytes = outputStream.toByteArray();
             base64String = Base64.getEncoder().encodeToString(bytes);
-            System.out.println(base64String);
         }catch (IOException e){
             e.printStackTrace();
         }

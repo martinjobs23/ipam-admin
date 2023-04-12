@@ -1,6 +1,7 @@
 package com.ceit.desktop.controller;
 
 //import com.ceit.desktop.grpc.ca.*;
+
 import com.ceit.desktop.service.CertRequestService;
 import com.ceit.desktop.util.Hash;
 import com.ceit.ioc.annotations.Autowired;
@@ -9,14 +10,9 @@ import com.ceit.ioc.annotations.RequestMapping;
 import com.ceit.jdbc.SimpleJDBC;
 import com.ceit.response.Result;
 import com.ceit.utils.SqlUtil;
-import org.apache.commons.fileupload.FileUploadException;
 
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -366,14 +362,14 @@ public class CertRequestController {
     //已注册设备查询
     @RequestMapping(value = "/getCheckList")
     public String getCheckList(Map<String, Object> reqBody){
-        String selectFieldNames = "radcheck.*,device_cert.*,sys_organization.name";
+        String selectFieldNames = "device_cert.*,sys_organization.name";
         //条件查询
         String[] optionNames ={"username"};
         SqlUtil sqlUtil = new SqlUtil(reqBody);
-        String jsonData = sqlUtil.setTable("radcheck,device_cert,sys_organization")
+        String jsonData = sqlUtil.setTable("device_cert,sys_organization")
                 .setAcceptOptions(optionNames)
                 .setFields(selectFieldNames)
-                .setWhere("radcheck.username = device_cert.username and device_cert.org_id = sys_organization.id")
+                .setWhere("device_cert.org_id = sys_organization.id")
                 .selectForJsonArray();
         int count = sqlUtil.selectForTotalCount();
         jsonData = "{\"totalCount\":" + count + ",\"jsonData\":" + jsonData + "}";
@@ -409,15 +405,20 @@ public class CertRequestController {
         return jsonData;
     }
 
-    //软件上传注册
+    //私有软件登记
     @RequestMapping(value = "/privateSoftwareUpload")
     public Result privateSoftwareUpload(Map<String, Object> reqBody) {
         return certRequestService.privateSoftwareUpload(reqBody);
     }
 
+    //公有软件上传
     @RequestMapping(value = "/publicSoftwareUpload")
-    public Result softRegister(Map<String, Object> reqBody, HttpServletRequest request)  {
+    public Result publicSoftwareUpload(Map<String, Object> reqBody, HttpServletRequest request)  {
         return certRequestService.publicSoftwareUpload(reqBody,request);
+    }
+    @RequestMapping(value = "/SoftwareEdit")
+    public Result SoftwareEdit(Map<String, Object> reqBody) {
+        return certRequestService.SoftwareEdit(reqBody);
     }
 
     //软件下载
